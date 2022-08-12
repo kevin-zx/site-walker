@@ -4,12 +4,14 @@ import "net/url"
 
 // 网站的页面信息
 type Page struct {
-	Title         string
-	Desc          string
-	Keywords      []string
-	RawURL        string
-	URL           *url.URL
-	H1            string
+	Title    string
+	Desc     string
+	Keywords []string
+	H1       string // h1标签的内容
+
+	RawURL string
+	URL    *url.URL
+
 	Pages         map[string]*Page // 这个页面链接到的内页页面
 	ExternalLinks []Href           // 外链
 	Html          []byte           // 网站网页数据
