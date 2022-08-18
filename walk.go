@@ -8,15 +8,14 @@ import (
 
 type SiteWalker struct {
 	collector *colly.Collector
-
-	// limit
-	parallelism int
-	randomDelay time.Duration
+	// colly limit
+	limitRule *colly.LimitRule
+	uaCustom  bool
 }
 
 type SiteWalkerOption func(sw *SiteWalker)
 
-func NewSiteWalker(opts ...SiteWalkerOption) *SiteWalker {
+func NewSiteWalker(startUrl string, AllowedDomains []string, opts ...SiteWalkerOption) *SiteWalker {
 	sw := &SiteWalker{}
 	sw.init()
 	for _, opt := range opts {
@@ -32,11 +31,20 @@ const (
 )
 
 func (sw *SiteWalker) init() {
+	sw.collector = colly.NewCollector()
 	sw.collector.UserAgent = defaultPCUserAgent
-	sw.parallelism = 1
+
 	// default MaxDepth is 1000,
 	// incase crawling is too heavy,
 	sw.collector.MaxDepth = 1000
+	sw.collector.Async = true
+	sw.collector.SetRequestTimeout(time.Second * 20)
+
+	sw.limitRule.DomainGlob = "*"
+	sw.limitRule.Parallelism = 1
+	sw.limitRule.RandomDelay = time.Second
+	sw.limitRule.Delay = time.Second
+
 }
 
 func (sw *SiteWalker) Walk(url string) (*WebSite, error) {
@@ -57,7 +65,7 @@ func CacheDir(dir string) SiteWalkerOption {
 // 并发数
 func Parallelism(n int) SiteWalkerOption {
 	return func(sw *SiteWalker) {
-		sw.parallelism = n
+		sw.limitRule.Parallelism = n
 	}
 }
 
@@ -66,12 +74,17 @@ func Parallelism(n int) SiteWalkerOption {
 func UserAgent(ua string) SiteWalkerOption {
 	return func(sw *SiteWalker) {
 		sw.collector.UserAgent = ua
+		sw.uaCustom = true
 	}
 }
 
 // device type will be used to decide UserAgent
 func WithDeviceType(isMobile bool) SiteWalkerOption {
 	return func(sw *SiteWalker) {
+		if sw.uaCustom {
+			return
+		}
+
 		if isMobile {
 			sw.collector.UserAgent = defaultMobileUserAgent
 		} else {
