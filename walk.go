@@ -1,10 +1,15 @@
 package sitewalker
 
 import (
+	"regexp"
+	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly"
 )
+
+const fileReg = ".+?(\\.jpg|\\.png|\\.gif|\\.GIF|\\.PNG|\\.JPG|\\.pdf|\\.PDF|\\.doc|\\.DOC|\\.csv|\\.CSV|\\.xls|\\.XLS|\\.xlsx|\\.XLSX|\\.mp40|\\.lfu|\\.DNG|\\.ZIP|\\.zip)(\\W+?\\w|$)"
 
 type SiteWalker struct {
 	collector *colly.Collector
@@ -21,6 +26,7 @@ func NewSiteWalker(startUrl string, AllowedDomains []string, opts ...SiteWalkerO
 	for _, opt := range opts {
 		opt(sw)
 	}
+	sw.collector.Limit(sw.limitRule)
 	return sw
 }
 
@@ -31,15 +37,21 @@ const (
 )
 
 func (sw *SiteWalker) init() {
-	sw.collector = colly.NewCollector()
-	sw.collector.UserAgent = defaultPCUserAgent
+	collector := colly.NewCollector()
+	collector.DetectCharset = true
+	collector.Async = true
+	collector.UserAgent = defaultPCUserAgent
 
 	// default MaxDepth is 1000,
 	// incase crawling is too heavy,
-	sw.collector.MaxDepth = 1000
-	sw.collector.Async = true
-	sw.collector.SetRequestTimeout(time.Second * 20)
+	collector.MaxDepth = 1000
 
+	collector.Async = true
+	collector.SetRequestTimeout(time.Second * 20)
+	collector.SetRequestTimeout(10 * time.Second)
+	colly.DisallowedURLFilters(regexp.MustCompile(fileReg))
+
+	sw.collector = collector
 	sw.limitRule.DomainGlob = "*"
 	sw.limitRule.Parallelism = 1
 	sw.limitRule.RandomDelay = time.Second
@@ -48,9 +60,21 @@ func (sw *SiteWalker) init() {
 }
 
 func (sw *SiteWalker) Walk(url string) (*WebSite, error) {
-	collector := colly.NewCollector()
-	collector.DetectCharset = true
-	collector.Async = true
+	sw.collector.OnHTML("html", func(e *colly.HTMLElement) {
+
+		e.DOM.Find("a[href]").EachWithBreak(func(i int, s *goquery.Selection) bool {
+			href, ok := s.Attr("href")
+			if !ok {
+				return true
+			}
+			if strings.Contains(href, "javascript") || strings.Contains(href, "mailto") {
+				return true
+			}
+
+			return true
+		})
+
+	})
 
 	return nil, nil
 }
@@ -90,5 +114,20 @@ func WithDeviceType(isMobile bool) SiteWalkerOption {
 		} else {
 			sw.collector.UserAgent = defaultPCUserAgent
 		}
+	}
+}
+
+// withDelay
+func WithDelay(randomDelay time.Duration, delay time.Duration) SiteWalkerOption {
+	return func(sw *SiteWalker) {
+		sw.limitRule.RandomDelay = randomDelay
+		sw.limitRule.Delay = delay
+	}
+}
+
+// with timeout
+func WithTimeout(timeout time.Duration) SiteWalkerOption {
+	return func(sw *SiteWalker) {
+		sw.collector.SetRequestTimeout(timeout)
 	}
 }
