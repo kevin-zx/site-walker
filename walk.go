@@ -2,7 +2,6 @@ package sitewalker
 
 import (
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -61,16 +60,12 @@ func (sw *SiteWalker) init() {
 
 func (sw *SiteWalker) Walk(url string) (*WebSite, error) {
 	sw.collector.OnHTML("html", func(e *colly.HTMLElement) {
-
+		// cuurentUrl := e.Request.URL.String()
 		e.DOM.Find("a[href]").EachWithBreak(func(i int, s *goquery.Selection) bool {
-			href, ok := s.Attr("href")
-			if !ok {
+			link := ParseATag2Link(s, e.Request.URL)
+			if link == nil {
 				return true
 			}
-			if strings.Contains(href, "javascript") || strings.Contains(href, "mailto") {
-				return true
-			}
-
 			return true
 		})
 
