@@ -9,10 +9,11 @@ import (
 
 // 网站的页面信息
 type Page struct {
-	Title    string
-	Desc     string
-	Keywords []string
-	H1       string // h1标签的内容
+	// seo text 信息
+	Title      string
+	Desciption string
+	Keywords   []string
+	H1         string // h1标签的内容
 
 	RawURL string
 	URL    *url.URL

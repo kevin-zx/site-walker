@@ -48,7 +48,7 @@ func (sw *SiteWalker) init() {
 	collector.Async = true
 	collector.SetRequestTimeout(time.Second * 20)
 	collector.SetRequestTimeout(10 * time.Second)
-	colly.DisallowedURLFilters(regexp.MustCompile(fileReg))
+	collector.DisallowedURLFilters = append(collector.DisallowedURLFilters, regexp.MustCompile(fileReg))
 
 	sw.collector = collector
 	sw.limitRule.DomainGlob = "*"
@@ -59,7 +59,15 @@ func (sw *SiteWalker) init() {
 }
 
 func (sw *SiteWalker) Walk(url string) (*WebSite, error) {
+	webSite := &WebSite{}
 	sw.collector.OnHTML("html", func(e *colly.HTMLElement) {
+		page := &Page{}
+
+		// TDK
+		page.Title = e.ChildText("title")
+		page.Desciption = e.ChildText("meta[name=description]")
+		page.Keywords = e.ChildText("meta[name=keywords]")
+
 		// cuurentUrl := e.Request.URL.String()
 		e.DOM.Find("a[href]").EachWithBreak(func(i int, s *goquery.Selection) bool {
 			link := ParseATag2Link(s, e.Request.URL)
