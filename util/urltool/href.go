@@ -21,11 +21,11 @@ func IsValidHref(href string) bool {
 }
 
 func ClearHref(href string) string {
+	href = handleEndURLUtf8EncodeSpace(href)
+	href = handleUnicodeEncodeSpace(href)
 	href = strings.ToLower(href)
 	href = strings.TrimSpace(href)
 	href = handleDoubleSlant(href)
-	href = handleEndURLUtf8EncodeSpace(href)
-	href = handleUnicodeEncodeSpace(href)
 	return href
 }
 

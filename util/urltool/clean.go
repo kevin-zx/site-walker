@@ -4,26 +4,19 @@ import "strings"
 
 func handleDoubleSlant(url string) string {
 	protocol := ""
-	if strings.HasPrefix(url, "https://") {
-		protocol = "https://"
+	if strings.Contains(url, "://") {
+		parts := strings.Split(url, "://")
+		if len(parts) > 1 {
+			protocol = parts[0] + "://"
+			url = parts[1]
+		}
 	}
-	if strings.HasPrefix(url, "http://") {
-		protocol = "http://"
+
+	for strings.Contains(url, "//") {
+		url = strings.ReplaceAll(url, "//", "/")
 	}
-	url = strings.ReplaceAll(url, protocol, "")
-	pathes := strings.Split(url, "/")
-	finalUrl := strings.Join(pathes, "/")
-	return protocol + finalUrl
-	// var sb strings.Builder
-	// sb.WriteString(protocol)
-	// for _, path := range pathes {
-	// 	if path == "" {
-	// 		continue
-	// 	}
-	// 	sb.WriteString("/")
-	// 	sb.WriteString(path)
-	// }
-	// return sb.String()
+
+	return protocol + url
 }
 
 func handleEndURLUtf8EncodeSpace(url string) string {
