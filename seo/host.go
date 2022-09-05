@@ -1,0 +1,5 @@
+package seo
+
+func IsSameHost() {
+
+}

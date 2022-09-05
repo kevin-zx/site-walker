@@ -1,7 +1,9 @@
 package sitewalker
 
 import (
+	"log"
 	"net/url"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/kevin-zx/site-walker/util/urltool"
@@ -10,20 +12,18 @@ import (
 // 网站的页面信息
 type Page struct {
 	// seo text 信息
-	Title      string
-	Desciption string
-	Keywords   []string
-	H1         string // h1标签的内容
+	Title       string
+	Description string
+	Keywords    []string
+	H1          string // h1标签的内容
 
 	RawURL string
 	URL    *url.URL
 
-	Pages         map[string]*Page // 这个页面链接到的内页页面
-	ExternalLinks []Link           // 外链
-	Html          []byte           // 网站网页数据
-
-	deep int // 爬取深度
-	// SameDomainExternalLinks []Href // 相同域名的外链 比如 image.baidu.com 页面中 含有 zhidao.baidu.com
+	Links         []*Link
+	ExternalLinks []*Link // 外链
+	Html          []byte  // 网站网页数据
+	deep          int     // 爬取深度
 }
 
 // 网站的基本信息
@@ -54,13 +54,17 @@ func ParseATag2Link(a *goquery.Selection, pageURL *url.URL) *Link {
 	if !ok {
 		return nil
 	}
-	if !urltool.IsValidHref(href) {
-		return nil
+	if strings.Contains(href, "https://") {
+		log.Println("got")
 	}
 	href = urltool.ClearHref(href)
 	if href == "" {
 		return nil
 	}
+	if !urltool.IsValidHref(href) {
+		return nil
+	}
+
 	txt := GetATagAnchor(a)
 	LinkType := LinkTypeText
 	if a.Find("img").Size() > 0 {

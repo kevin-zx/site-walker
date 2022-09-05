@@ -2,10 +2,12 @@ module github.com/kevin-zx/site-walker
 
 go 1.18
 
-require github.com/gocolly/colly v1.2.0
+require (
+	github.com/PuerkitoBio/goquery v1.8.0
+	github.com/gocolly/colly v1.2.0
+)
 
 require (
-	github.com/PuerkitoBio/goquery v1.8.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/antchfx/htmlquery v1.2.5 // indirect
 	github.com/antchfx/xmlquery v1.3.12 // indirect

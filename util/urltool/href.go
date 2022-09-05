@@ -14,7 +14,7 @@ func IsValidHref(href string) bool {
 
 	href = strings.ToLower(href)
 	href = strings.TrimSpace(href)
-	if strings.Contains(href, ":") && strings.HasPrefix(href, "http") {
+	if strings.Contains(href, ":") && !strings.HasPrefix(href, "http") {
 		return false
 	}
 	return true
