@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"encoding/json"
 	"time"
 
 	sitewalker "github.com/kevin-zx/site-walker"
@@ -17,19 +16,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	articleFile := "article.txt"
-	f, err := os.Create(articleFile)
+	data, err := json.MarshalIndent(webSite, "", "  ")
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
-	// fmt.Printf("%+v", webSite)
-	for _, page := range webSite.Pages {
-		fmt.Println(page.RawURL)
-		if page.RawURL == "https://www.fxt.cn/article" {
-			f.Write(page.Html)
-			f.Sync()
-		}
-	}
-
+	println(string(data))
 }

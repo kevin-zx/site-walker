@@ -1,9 +1,7 @@
 package sitewalker
 
 import (
-	"log"
 	"net/url"
-	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/kevin-zx/site-walker/util/urltool"
@@ -12,26 +10,31 @@ import (
 // 网站的页面信息
 type Page struct {
 	// seo text 信息
-	Title       string
-	Description string
-	Keywords    []string
-	H1          string // h1标签的内容
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Keywords    []string `json:"keywords"`
+	// h1标签的内容
+	H1 string `json:"h1"`
 
-	RawURL string
-	URL    *url.URL
+	// 页面的原始url
+	RawURL string   `json:"raw_url"`
+	URL    *url.URL `json:"url"`
 
-	Links         []*Link
-	ExternalLinks []*Link // 外链
-	Html          []byte  // 网站网页数据
-	deep          int     // 爬取深度
+	// 页面中的链接
+	Links []*Link `json:"links"`
+	// 页面中的外部链接
+	ExternalLinks []*Link `json:"external_links"`
+	// 网站网页数据
+	Html []byte `json:"html"`
+	deep int    // 爬取深度
 }
 
 // 网站的基本信息
 type WebSite struct {
-	Protocol string
-	Domain   string
-	HomePage *Page
-	Pages    []*Page
+	Protocol string  `json:"protocol"`
+	Domain   string  `json:"domain"`
+	HomePage *Page   `json:"home_page"`
+	Pages    []*Page `json:"pages"`
 }
 
 type LinkType int
@@ -43,19 +46,16 @@ const (
 
 // 网站的链接信息
 type Link struct {
-	Href     string
-	URL      *url.URL
-	Text     string
-	LinkType LinkType
+	Href     string   `json:"href"`
+	URL      *url.URL `json:"-"`
+	Text     string   `json:"text"`
+	LinkType LinkType `json:"link_type"`
 }
 
 func ParseATag2Link(a *goquery.Selection, pageURL *url.URL) *Link {
 	href, ok := a.Attr("href")
 	if !ok {
 		return nil
-	}
-	if strings.Contains(href, "https://") {
-		log.Println("got")
 	}
 	href = urltool.ClearHref(href)
 	if href == "" {
