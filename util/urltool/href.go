@@ -20,7 +20,7 @@ func IsValidHref(href string) bool {
 	return true
 }
 
-func ClearHref(href string) string {
+func CleanHref(href string) string {
 	href = handleEndURLUtf8EncodeSpace(href)
 	href = handleUnicodeEncodeSpace(href)
 	href = strings.ToLower(href)

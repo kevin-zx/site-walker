@@ -15,7 +15,34 @@ func TestIsValidHref(t *testing.T) {
 		args args
 		want bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "javascript",
+			args: args{
+				href: "javascript:alert(1)",
+			},
+			want: false,
+		},
+		{
+			name: "mailto",
+			args: args{
+				href: "mailto:",
+			},
+			want: false,
+		},
+		{
+			name: "https",
+			args: args{
+				href: "https://www.baidu.com",
+			},
+			want: true,
+		},
+		{
+			name: "http",
+			args: args{
+				href: "http://www.baidu.com",
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -26,7 +53,7 @@ func TestIsValidHref(t *testing.T) {
 	}
 }
 
-func TestClearHref(t *testing.T) {
+func TestCleanHref(t *testing.T) {
 	type args struct {
 		href string
 	}
@@ -35,11 +62,45 @@ func TestClearHref(t *testing.T) {
 		args args
 		want string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "suffix double slash",
+			args: args{
+				href: "https://www.baidu.com//",
+			},
+			want: "https://www.baidu.com/",
+		},
+		{
+			name: "prefix double slash",
+			args: args{
+				href: "//www.baidu.com/",
+			},
+			want: "//www.baidu.com/",
+		},
+		{
+			name: "middle double slash",
+			args: args{
+				href: "https://www.baidu.com//aa/",
+			},
+			want: "https://www.baidu.com/aa/",
+		},
+		{
+			name: "tail utf8 space",
+			args: args{
+				href: "https://www.baidu.com/aa/%20",
+			},
+			want: "https://www.baidu.com/aa/",
+		},
+		{
+			name: "unicode space",
+			args: args{
+				href: "https://www.baidu.com/aa/　",
+			},
+			want: "https://www.baidu.com/aa/",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ClearHref(tt.args.href); got != tt.want {
+			if got := CleanHref(tt.args.href); got != tt.want {
 				t.Errorf("ClearHref() = %v, want %v", got, tt.want)
 			}
 		})
@@ -57,7 +118,32 @@ func TestConvertHref2URL(t *testing.T) {
 		want    *url.URL
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "relative path",
+			args: args{
+				href:    "/aa/bb",
+				currURL: &url.URL{Scheme: "https", Host: "www.baidu.com"},
+			},
+			want: &url.URL{
+				Scheme: "https",
+				Host:   "www.baidu.com",
+				Path:   "/aa/bb",
+			},
+			wantErr: false,
+		},
+		{
+			name: "absolute path",
+			args: args{
+				href:    "https://www.baidu.com/aa/bb",
+				currURL: &url.URL{Scheme: "https", Host: "www.baidu.com"},
+			},
+			want: &url.URL{
+				Scheme: "https",
+				Host:   "www.baidu.com",
+				Path:   "/aa/bb",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

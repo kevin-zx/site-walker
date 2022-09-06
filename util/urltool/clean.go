@@ -3,20 +3,25 @@ package urltool
 import "strings"
 
 func handleDoubleSlant(url string) string {
-	protocol := ""
+	prefix := ""
 	if strings.Contains(url, "://") {
 		parts := strings.Split(url, "://")
 		if len(parts) > 1 {
-			protocol = parts[0] + "://"
+			prefix = parts[0] + "://"
 			url = parts[1]
 		}
+	}
+
+	if strings.HasPrefix(url, "//") {
+		prefix = "//"
+		url = strings.TrimPrefix(url, "//")
 	}
 
 	for strings.Contains(url, "//") {
 		url = strings.ReplaceAll(url, "//", "/")
 	}
 
-	return protocol + url
+	return prefix + url
 }
 
 func handleEndURLUtf8EncodeSpace(url string) string {

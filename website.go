@@ -57,7 +57,7 @@ func ParseATag2Link(a *goquery.Selection, pageURL *url.URL) *Link {
 	if !ok {
 		return nil
 	}
-	href = urltool.ClearHref(href)
+	href = urltool.CleanHref(href)
 	if href == "" {
 		return nil
 	}
